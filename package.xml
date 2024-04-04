@@ -9,16 +9,25 @@
     <author email="vlkjan6@fel.cvut.cz">Jan Vlk</author>
     <maintainer email="vlkjan6@fel.cvut.cz">Jan Vlk</maintainer>
 
-    <license>BSD-3</license>
+    <license>BSD</license>
 
     <buildtool_depend>catkin</buildtool_depend>
     
-    <depend>naex</depend>
-    <depend>nav_msgs</depend>
     <depend>roscpp</depend>
     <depend>rospy</depend>
+    <depend>nav_msgs</depend>
     <depend>sensor_msgs</depend>
     <depend>std_msgs</depend>
+    <depend>geometry_msgs</depend>
     <depend>tf2_ros</depend>
-    <depend>zbar_ros</depend>
+    <depend>naex</depend>
+    <depend>map_data</depend>
+
+    <exec_depend condition="$ROS_DISTRO != noetic">python-utm-pip</exec_depend>
+    <exec_depend condition="$ROS_DISTRO != noetic">python-numpy</exec_depend>
+    <exec_depend condition="$ROS_DISTRO != noetic">python-scipy</exec_depend>
+
+    <exec_depend condition="$ROS_DISTRO == noetic">python3-utm</exec_depend>
+    <exec_depend condition="$ROS_DISTRO == noetic">python3-numpy</exec_depend>
+    <exec_depend condition="$ROS_DISTRO == noetic">python3-scipy</exec_depend>
 </package>
