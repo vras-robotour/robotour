@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <node name="transform_align" pkg="robotour" type="transform_align"
-          respawn="true" respawn_delay="1.0" output="screen">
+    <node name="transform_align" pkg="robotour" type="transform_align" output="screen">
 
         <rosparam>
             # source_parent_frame: imu_odom
