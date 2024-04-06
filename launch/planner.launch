@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <node name="grid_planner" pkg="naex" type="grid_planner"
+          respawn="true" respawn_delay="1.0" output="screen">
+        
+        <rosparam subst_value="true">
+            position_field: x
+            cost_fields: [cost, cost, intensity]
+            map_frame: local_utm
+            robot_frame: base_link
+            max_cloud_age: 1.0
+            input_range: 5.0
+            cell_size: 0.4
+            forget_factor: 0.1
+            max_costs: [1.0, .nan, .nan]
+            default_costs: [.nan, 1.0, 1.0]
+            neighborhood: 8
+            min_path_cost: 1.0
+            planning_freq: 1.0
+            plan_from_goal_dist: 2.0
+            num_input_clouds: 3
+            input_queue_size: 2
+            start_on_request: true
+            stop_on_goal: true
+            goal_reached_dist: 3.0
+            mode: 2
+        </rosparam>
+
+        <!-- Services -->
+        <remap from="get_plan" to="get_plan"/>
+
+        <!-- Inputs -->
+        <remap from="input_cloud_0" to="osm_grid"/>
+        <remap from="input_cloud_1" to="camera/color/geometric_traversability"/>
+        <remap from="input_cloud_2" to="camera/color/segmentation_voxels"/>
+
+        <!-- Outputs -->
+        <remap from="map" to="map"/>
+        <remap from="grid" to="grid"/>
+        <remap from="local_map" to="local_map"/>
+        <remap from="path" to="path"/>
+        <remap from="planning_freq" to="planning_freq"/>
+    </node>
+</launch>
