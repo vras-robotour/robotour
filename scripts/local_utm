@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+
+import utm
+import numpy as np
+from threading import Lock
+
+import rospy
+from sensor_msgs.msg import NavSatFix
+from tf2_ros import StaticTransformBroadcaster
+from geometry_msgs.msg import Vector3, PoseWithCovarianceStamped, TransformStamped
+
+
+class LocalUtm:
+    def __init__(self):
+        self.utm_frame = rospy.get_param('~utm_frame', 'utm')
+        self.local_frame = rospy.get_param('~local_frame', 'local')
+        self.max_var = np.array(rospy.get_param('~max_var', [10, 10, 50]))
+        self.wait_msgs = rospy.get_param('~wait_msgs', 10)
+
+        self.lock = Lock()
+
+        self.tf_static_pub = StaticTransformBroadcaster()
+
+        self.navsatfix_sub = rospy.Subscriber('navsatfix', NavSatFix, self.navsatfix_cb, queue_size=1)
+        self.pose_sub = rospy.Subscriber('pose', PoseWithCovarianceStamped, self.pose_cb, queue_size=1)
+
+    def check_var(self, vars):
+        '''
+        Check if the covariance matrix is valid.
+
+        Parameters
+        ----------
+        vars : np.ndarray
+            Covariance matrix.
+
+        Returns
+        -------
+        bool
+            True if the covariance matrix is valid.
+        '''
+        return np.all((vars >= 0 & (vars <= self.max_var) & np.isfinite(vars)))
+
+    def unsubscribe(self):
+        '''
+        Unsubscribe from topics. Useful when all measurements are received.
+        '''
+        self.navsatfix_sub.unregister()
+        self.pose_sub.unregister()
+        rospy.loginfo('Unsubscribed from topics.')
+
+    def process_data(self, stamp, gps_pos, vars):
+        '''
+        Process received data.
+
+        Parameters
+        ----------
+        stamp : rospy.Time
+            Message timestamp.
+        gps_pos : np.ndarray
+            GPS position [latitude, longitude, altitude].
+        vars : np.ndarray
+            Covariance matrix.
+        '''
+        if not self.check_var(vars):
+            rospy.logwarn('Invalid covariance.')
+            return
+
+        try:
+            easting, northing = utm.from_latlon(gps_pos[0], gps_pos[1])[:2]
+        except utm.OutOfRangeError as e:
+            rospy.logerr_throttle(1, f'UTM conversion error: {e}')
+            return
+        
+        with self.lock:
+            if self.wait_msgs <= 0:
+                return
+            self.wait_msgs -= 1
+            if self.wait_msgs > 0:
+                rospy.loginfo_throttle(1, f'Waiting for {self.wait_msgs} more measurements.')
+                return
+            rospy.loginfo('All measurements received.')
+
+            pos = np.array([easting, northing, gps_pos[2]])
+
+            # Publish static transform
+            utm_to_local = TransformStamped()
+            utm_to_local.header.stamp = stamp
+            utm_to_local.header.frame_id = self.utm_frame
+            utm_to_local.child_frame_id = self.local_frame
+            utm_to_local.transform.translation = Vector3(*pos)
+
+            # Keep east-north orientation
+            utm_to_local.transform.rotation.w = 1
+
+            self.tf_static_pub.sendTransform([utm_to_local])
+            rospy.loginfo(f'Published static transform from {self.utm_frame} to {self.local_frame}.')
+
+            self.unsubscribe()
+            
+    def navsatfix_cb(self, msg):
+        '''
+        Callback for NavSatFix messages.
+
+        Parameters
+        ----------
+        msg : NavSatFix
+            Received message.
+        '''
+        assert isinstance(msg, NavSatFix)
+
+        rospy.loginfo_once(f'Received first navsatfix message: {msg.header.frame_id}.')
+
+        if msg.position_covariance_type < NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN:
+            rospy.loginfo_throttle(5, 'Waiting for covariance.')
+            return
+
+        gps_pos = np.array([msg.latitude, msg.longitude, msg.altitude])
+        vars = np.array(msg.position_covariance[::4])
+
+        self.process_data(msg.header.stamp, gps_pos, vars)
+
+    def pose_cb(self, msg):
+        '''
+        Callback for PoseWithCovarianceStamped messages.
+
+        Parameters
+        ----------
+        msg : PoseWithCovarianceStamped
+            Received message.
+        '''
+        assert isinstance(msg, PoseWithCovarianceStamped)
+
+        rospy.loginfo_once(f'Received first pose message: {msg.header.frame_id}.')
+
+        pos = msg.pose.pose.position
+        vars = np.array(msg.pose.covariance[:18:7])
+
+        self.process_data(msg.header.stamp, [pos.x, pos.y, pos.z], vars)
+
+
+def main():
+    rospy.init_node('local_utm')
+    local_utm = LocalUtm()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

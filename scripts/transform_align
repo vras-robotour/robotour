@@ -1,0 +1,289 @@
+#!/usr/bin/env python
+
+import numpy as np
+from threading import RLock
+
+import rospy
+from nav_msgs.msg import Odometry
+from ros_numpy import numpify, msgify
+from geometry_msgs.msg import Pose, Vector3, Transform, TransformStamped, PoseWithCovarianceStamped
+from tf2_ros import Buffer, TransformListener, TransformException, TransformBroadcaster, ExtrapolationException
+
+from utils import align
+
+
+SOURCE = 'source'
+TARGET = 'target'
+
+
+def odometry_to_transform_stamped(msg):
+    '''
+    Transform Odometry to TransformStamped.
+
+    Parameters
+    ----------
+    msg : Odometry
+        Odometry message.
+
+    Returns
+    -------
+    tf : TransformStamped
+        TransformStamped message.
+    '''
+    pose = msg.pose.pose
+
+    tf = TransformStamped()
+    tf.header = msg.header
+    tf.child_frame_id = msg.child_frame_id
+    tf.transform.translation = Vector3(pose.position.x, pose.position.y, pose.position.z)
+    tf.transform.rotation = pose.orientation
+    return tf
+
+
+class Correspondences:
+        def __init__(self, keep=100):
+            self.next = 0
+            self.source = np.zeros((keep, 3))
+            self.target = np.zeros((keep, 3))
+            self.weight = np.zeros(keep)
+            self.last_stamp = None
+
+        def update_stamp(self, stamp):
+            if self.last_stamp is None:
+                self.last_stamp = stamp
+            else:
+                self.last_stamp = max(self.last_stamp, stamp)
+
+        def add(self, source, target, weight=1.0, stamp=None):
+            i = self.next % self.source.shape[0]
+            self.source[i] = source
+            self.target[i] = target
+            self.weight[i] = weight
+            if stamp is not None:
+                self.update_stamp(stamp)
+            self.next += 1
+        
+        def get(self):
+            if self.next >= self.source.shape[0]:
+                return (self.source, self.target, self.weight, self.last_stamp)
+            return (self.source[:self.next],
+                    self.target[:self.next],
+                    self.weight[:self.next],
+                    self.last_stamp)
+
+
+class TransformAlign:
+    def __init__(self):
+        # Child frame needs to be provided for pose.
+        self.parent_frame = {
+            SOURCE: rospy.get_param('~source_parent_frame', None),
+            TARGET: rospy.get_param('~target_parent_frame', None),
+        }
+        self.child_frame = {
+            SOURCE: rospy.get_param('~source_child_frame', None),
+            TARGET: rospy.get_param('~target_child_frame', None),
+        }
+        self.triggers = rospy.get_param('~triggers', ['target'])
+        assert set(self.triggers) < set([SOURCE, TARGET])
+        self.aligned_frame = rospy.get_param('~aligned_frame', None)
+        self.min_distance = rospy.get_param('~min_distance', 0.1)
+        self.min_interval = rospy.get_param('~min_interval', 0.1)
+        self.keep_points = rospy.get_param('~keep_points', 100)
+        self.keep_vectors = rospy.get_param('~keep_vectors', 10)
+        self.frequency = rospy.get_param('~frequency', 10)
+
+        self.lock = RLock()
+        self.stamps_to_add = []
+        self.last_message = {SOURCE: None, TARGET: None}
+        self.points = Correspondences(self.keep_points)
+        self.vectors = Correspondences(self.keep_vectors)
+        self.vectors.add(np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 1.0]), weight=1000.0)
+        self.last_estimated = None
+
+        self.tf_msg = None
+        self.tf_pub = TransformBroadcaster()
+
+        self.tf = Buffer()
+        self.tf_sub = TransformListener(self.tf)
+
+        # Static transforms to aligned frame.
+        self.aligned_to_child = {}
+
+        self.odom_tf = {SOURCE: Buffer(), TARGET: Buffer()}
+        self.source_pose_sub = rospy.Subscriber('source_pose', PoseWithCovarianceStamped, self.receive_source_pose, queue_size=10)
+        self.target_pose_sub = rospy.Subscriber('target_pose', PoseWithCovarianceStamped, self.receive_target_pose, queue_size=10)
+        self.source_odom_sub = rospy.Subscriber('source_odom', Odometry, self.receive_source_odom, queue_size=10)
+        self.target_odom_sub = rospy.Subscriber('target_odom', Odometry, self.receive_target_odom, queue_size=10)
+        if self.frequency > 0:
+            self.timer = rospy.Timer(rospy.Duration(1 / self.frequency), self.publish)
+        rospy.loginfo('Node initialized.')
+
+    def last_common_time(self):
+        with self.lock:
+            messages = self.last_message.values()
+        if None in messages:
+            return None
+        timestamps = [msg.header.stamp for msg in messages]
+        return min(timestamps)
+
+    def get_aligned_frame(self, child_frame):
+        return self.aligned_frame or child_frame
+    
+    def get_aligned_to_child(self, child_frame):
+        aligned_frame = self.get_aligned_frame(child_frame)
+        return self.tf.lookup_transform(child_frame, aligned_frame, rospy.Time(0))
+
+    def convert_to_aligned_odom(self, msg):
+        # p-a-c * c-a = p-a
+        T_pc = numpify(msg.pose.pose)
+        T_ca = numpify(self.get_aligned_to_child(msg.child_frame_id).transform)
+        T_pa = np.dot(T_pc, T_ca)
+        msg.pose.pose = msgify(Pose, T_pa)
+        msg.child_frame_id = self.aligned_frame
+        return msg
+
+    def get_point_correspondence(self, trigger):
+        source = self.odom_tf[SOURCE].lookup_transform(self.parent_frame[SOURCE], self.aligned_frame, trigger)
+        source = numpify(source.transform.translation)
+        target = self.odom_tf[TARGET].lookup_transform(self.parent_frame[TARGET], self.aligned_frame, trigger)
+        target = numpify(target.transform.translation)
+        return source, target
+
+    def keep_odom(self, msg, key):
+        last = self.last_message[key]
+        if last is None:
+            return True
+        
+        # Check if the interval is large enough.
+        interval = (msg.header.stamp - last.header.stamp).to_sec()
+        if interval >= self.min_interval:
+            rospy.loginfo(f'Keeping measurement {interval} s apart from the '
+                          f'previous.')
+            return True
+        
+        # Check if the distance is large enough.
+        distance = np.linalg.norm(numpify(last.pose.pose.position) - numpify(msg.pose.pose.position))
+        if distance >= self.min_distance:
+            rospy.loginfo(f'Keeping measurement {distance} m from the previous.')
+            return True
+        
+        return False
+
+    def fix_frames(self, msg, key):
+        
+        # Store parent and child frames if not provided.
+        self.parent_frame[key] = self.parent_frame[key] or msg.header.frame_id
+        assert self.parent_frame[key] == msg.header.frame_id
+        self.child_frame[key] = self.child_frame[key] or msg.child_frame_id
+        assert self.child_frame[key] == msg.child_frame_id
+
+        # Override parent and child frames if necessary.
+        if self.parent_frame[key] and self.parent_frame[key] != msg.header.frame_id:
+            rospy.logwarn_once(f'Overriding parent frame {msg.header.frame_id} '
+                               f'with {self.parent_frame[key]} for {key}.')
+            msg.header.frame_id = self.parent_frame[key]
+
+        if self.child_frame[key] and self.child_frame[key] != msg.child_frame_id:
+            rospy.logwarn_once(f'Overriding child frame {msg.child_frame_id} '
+                               f'with {self.child_frame[key]} for {key}.')
+            msg.child_frame_id = self.child_frame[key]
+
+        return msg
+
+    def append_point_correspondence(self, stamp):
+        source, target = self.get_point_correspondence(stamp)
+        with self.lock:
+            self.points.add(source, target, weight=1.0, stamp=stamp)
+        rospy.loginfo(f'Point correspondence added at {stamp.to_sec()}.')
+
+    def append_correspondences(self):
+        appended = False
+        with self.lock:
+            last = self.last_common_time()
+            if last is None:
+                return appended
+            while self.stamps_to_add:
+                stamp = self.stamps_to_add[0]
+                if stamp > last:
+                    break
+                try:
+                    self.append_point_correspondence(stamp)
+                    appended = True
+                except ExtrapolationException as e:
+                    rospy.logerr(e)
+                self.stamps_to_add.pop(0)
+        return appended
+
+    def publish(self, evt=None):
+        with self.lock:
+            if self.tf_msg is None:
+                return
+            self.tf_msg.header.stamp = rospy.Time.now()
+            self.tf_pub.sendTransform(self.tf_msg)
+
+    def align(self):
+        with self.lock:
+            source_points, target_points, point_weights, stamp = self.points.get()
+            source_vectors, target_vectors, vector_weights, _ = self.vectors.get()
+            T = align(P0=source_points, P1=target_points, Pw=point_weights,
+                      V0=source_vectors, V1=target_vectors, Vw=vector_weights)
+            tf = TransformStamped()
+            tf.header.stamp = stamp
+            tf.header.frame_id = self.parent_frame[TARGET]
+            tf.child_frame_id = self.parent_frame[SOURCE]
+            tf.transform = msgify(Transform, T)
+            self.tf_msg = tf
+
+    def receive_odom(self, msg, key):
+        assert isinstance(msg, Odometry)
+        self.parent_frame[key] = self.parent_frame[key] or msg.header.frame_id
+        assert self.parent_frame[key] == msg.header.frame_id
+        self.child_frame[key] = self.child_frame[key] or msg.child_frame_id
+        assert self.child_frame[key] == msg.child_frame_id
+
+        if not self.keep_odom(msg, key):
+            return
+        self.last_message[key] = msg
+        
+        msg = self.fix_frames(msg, key)
+        msg = self.convert_to_aligned_odom(msg)
+        tf = odometry_to_transform_stamped(msg)
+        rospy.loginfo(f'Setting transform {key} {tf.header.stamp.to_sec()} '
+                      f'{tf.header.frame_id} -> {tf.child_frame_id}...')
+        self.odom_tf[key].set_transform(tf, 'odom')
+
+        with self.lock:
+            if key in self.triggers:
+                self.stamps_to_add.append(msg.header.stamp)
+            if self.append_correspondences():
+                self.align()
+                self.publish()
+        
+    def receive_odom_safe(self, msg, key):
+        assert isinstance(msg, Odometry)
+        try:
+            with self.lock:
+                self.receive_odom(msg, key)
+        except TransformException as e:
+            rospy.logerr(e)
+
+    def receive_pose(self, msg, key):
+        assert isinstance(msg, PoseWithCovarianceStamped)
+        assert self.child_frame[key]
+        odom = Odometry()
+        odom.header = msg.header
+        odom.child_frame_id = self.child_frame[key]
+        odom.pose.pose = msg.pose.pose
+        self.receive_odom_safe(odom, key)
+
+    def receive_source_pose(self, msg):
+        self.receive_pose(msg, SOURCE)
+
+    def receive_target_pose(self, msg):
+        self.receive_pose(msg, TARGET)
+
+    def receive_source_odom(self, msg):
+        self.receive_odom(msg, SOURCE)
+
+    def receive_target_odom(self, msg):
+        self.receive_odom(msg, TARGET)

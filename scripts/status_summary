@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+
+from threading import RLock
+
+import rospy
+from sensor_msgs.msg import NavSatFix
+from std_msgs.msg import String, Float32
+from septentrio_gnss_driver.msg import AttEuler
+
+
+NAVSAT_STATUS = {
+    -1: 'NO FIX',
+    0: 'FIX',
+    1: 'SBAS',
+    2: 'GBAS',
+}
+NAVSAT_SERVICE = {
+    1: 'GPS',
+    2: 'GLONASS',
+    4: 'COMPASS (BeiDou)',
+    8: 'GALILEO',
+}
+
+
+class StatusSummary:
+    def __init__(self):
+        self.qrcode = None
+        self.navsatfix = None
+        self.atteuler = None
+        self.planning_freq = 0
+
+        self.lock = RLock()
+
+        self.summary_pub = rospy.Publisher('status_summary', String, queue_size=5)
+
+        self.qrcode_sub = rospy.Subscriber('barcode', String, self.qrcode_cb, queue_size=5)
+        self.navsatfix_sub = rospy.Subscriber('navsatfix', NavSatFix, self.navsatfix_cb, queue_size=5)
+        self.atteuler_sub = rospy.Subscriber('atteuler', AttEuler, self.atteuler_cb, queue_size=5)
+        self.planning_freq_sub = rospy.Subscriber('planning_freq', Float32, self.planning_freq_cb, queue_size=5)
+
+        self.timer = rospy.Timer(rospy.Duration(1), self.timer_cb)
+
+    def signal_qrcode(self):
+        '''
+        Signal that a qr code with geo coordinates has been detected.
+        '''
+        raise NotImplementedError
+
+    def qrcode_cb(self, msg):
+        '''
+        Callback for qr code detection.
+
+        Parameters
+        ----------
+        msg : str
+            QR code message.
+        '''
+        with self.lock:
+            self.qrcode = msg
+        self.signal_qrcode()
+        
+    def navsatfix_cb(self, msg):
+        '''
+        Callback for NavSatFix message.
+
+        Parameters
+        ----------
+        msg : NavSatFix
+            NavSatFix message.
+        '''
+        with self.lock:
+            self.navsatfix = msg
+
+    def atteuler_cb(self, msg):
+        '''
+        Callback for AttEuler message.
+
+        Parameters
+        ----------
+        msg : AttEuler
+            AttEuler message.
+        '''
+        with self.lock:
+            self.atteuler = msg
+
+    def planning_freq_cb(self, msg):
+        '''
+        Planning frequency callback.
+
+        Parameters
+        ----------
+        msg : Float32
+            Planning frequency message.
+        '''
+        with self.lock:
+            self.planning_freq = msg.data
+
+    def summarize(self):
+        '''
+        Summarize the current status.
+
+        Returns
+        -------
+        str
+            Summary.
+        '''
+        parts = []
+
+        with self.lock:
+            if self.navsatfix is not None:
+                status = NAVSAT_STATUS.get(self.navsatfix.status.status, 'UNKNOWN')
+                parts.append(f'GPS status: {status}')
+                services = []
+                for service, name in NAVSAT_SERVICE.items():
+                    if self.navsatfix.status.service & service:
+                        services.append(name)
+                parts.append(f'GPS services: {", ".join(services)}')
+            else:
+                parts.append('GPS status: UNKNOWN')
+
+            if self.atteuler is not None:
+                parts.append(f'Heading: {self.atteuler.heading:3.1f}°')
+                parts.append(f'Pitch: {self.atteuler.pitch:3.1f}°')
+
+            if self.planning_freq:
+                parts.append(f'Planning frequency: {self.planning_freq:.3f} Hz')
+            else:
+                parts.append('Planning frequency: UNKNOWN')
+
+            return '\n'.join(parts)
+
+    def timer_cb(self, event):
+        '''
+        Timer callback.
+        '''
+        with self.lock:
+            summary = self.summarize()
+        self.summary_pub.publish(summary)
+
+
+def main():
+    rospy.init_node('status_summary')
+    status_summary = StatusSummary()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

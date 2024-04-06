@@ -1,0 +1,198 @@
+#!/usr/bin/env python
+
+import utm
+import numpy as np
+
+import rospy
+from nav_msgs.msg import Odometry
+from ros_numpy import numpify, msgify
+from tf.transformations import quaternion_matrix, euler_from_matrix
+from tf2_ros import Buffer, TransformListener, TransformException, TransformBroadcaster
+from geometry_msgs.msg import Pose, Vector3, TransformStamped, PoseWithCovarianceStamped
+
+
+def gps_pose_to_utm(pose):
+    '''
+    Transform GPS(wgs84) pose to UTM pose.
+
+    Parameters
+    ----------
+    pose : PoseWithCovarianceStamped
+        GPS pose.
+
+    Returns
+    -------
+    utm_pose : Pose
+        UTM pose.
+    '''
+    lon, lat, alt = pose.pose.position.x, pose.pose.position.y, pose.pose.position.z
+
+    easting, northing = utm.from_latlon(lat, lon)[:2]
+
+    utm_pose = Pose()
+    utm_pose.position.x = easting
+    utm_pose.position.y = northing
+    utm_pose.position.z = alt
+    utm_pose.orientation = pose.pose.orientation
+
+    return utm_pose
+
+def se3_inverse(T):
+    '''
+    Compute inverse of SE(3) matrix.
+
+    Parameters
+    ----------
+    T : np.ndarray
+        SE(3) matrix.
+
+    Returns
+    -------
+    T_inv : np.ndarray
+        Inverse of SE(3) matrix.
+    '''
+    T_inv = np.eye(4)
+    T_inv[:3, :3] = T[:3, :3].T
+    T_inv[:3, 3] = -np.matmul(T[:3, :3].T, T[:3, 3])
+    return T_inv
+
+
+class UtmOdom:
+    def __init__(self):
+        self.utm_frame = rospy.get_param('~utm_frame', 'utm')
+        self.local_utm_frame = rospy.get_param('~local_utm_frame', 'local_utm')
+        self.odom_frame = rospy.get_param('~odom_frame', 'odom')
+        self.robot_frame = rospy.get_param('~robot_frame', 'base_link')
+        self.publish_tf = rospy.get_param('~publish_tf', False)
+        self.tf_timeout = rospy.Duration(rospy.get_param('~tf_timeout', 1))
+        self.drop_incomplete = rospy.get_param('~drop_incomplete', True)
+        self.compute_velocity = rospy.get_param('~compute_velocity', False)
+
+        self.local_utm_origin = None
+        self.last_odom = None
+        self.tf = Buffer()
+        self.tf_listener = TransformListener(self.tf)
+
+        if self.local_utm_frame:
+            self.wait_for_local_utm()
+
+        self.utm_odom_pub = rospy.Publisher('utm_odom', Odometry, queue_size=10)
+        self.tf_pub = TransformBroadcaster()
+
+        self.gps_pose_sub = rospy.Subscriber('gps_pose', PoseWithCovarianceStamped, self.gps_pose_cb, queue_size=1)
+
+    def wait_for_local_utm(self):
+        '''
+        Wait for UTM to local transform.
+        '''
+        rospy.loginfo('Waiting for local UTM origin...')
+        while not rospy.is_shutdown():
+            try:
+                utm_to_local = self.tf.lookup_transform(self.local_utm_frame, self.utm_frame, rospy.Time(), rospy.Duration(60))
+                self.utm_to_local = numpify(utm_to_local.transform)
+                rospy.loginfo(f'UTM to local transform found: {self.utm_to_local}')
+                break
+            except TransformException as e:
+                rospy.logwarn(f'Transform failed: {e}')
+                rospy.sleep(1)
+
+    def fill_velocity(self, odom):
+        '''
+        Compute and fill velocity for odometry message.
+
+        Parameters
+        ----------
+        odom : Odometry
+            Odometry message.
+        '''
+        # Compute pose delta
+        T0 = quaternion_matrix(self.last_odom.pose.pose.orientation)
+        T0[:3, 3] = self.last_odom.pose.pose.position.x, self.last_odom.pose.pose.position.y, self.last_odom.pose.pose.position.z
+        T1 = quaternion_matrix(odom.pose.pose.orientation)
+        T1[:3, 3] = odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z
+        delta = np.matmul(T1, se3_inverse(T0))
+
+        # Compute velocity
+        dt = (odom.header.stamp - self.last_odom.header.stamp).to_sec()
+        odom.twist.twist.linear = Vector3(*delta[:3, 3] / dt)
+
+        # Compute angular velocity
+        euler = euler_from_matrix(delta)
+        odom.twist.twist.angular = Vector3(*euler[0:3] / dt)
+
+    def receive_pose(self, pose):
+        '''
+        Transformed received pose and publish odometry.
+
+        Parameters
+        ----------
+        pose : PoseWithCovarianceStamped
+            Received GPS pose.
+        '''
+        utm_pose = gps_pose_to_utm(pose.pose)
+
+        # Convert to local frame
+        if self.local_utm_frame:
+            assert self.utm_to_local is not None, 'Local UTM origin not set.'
+
+            utm_pose = numpify(utm_pose)
+            utm_pose = np.matmul(self.utm_to_local, utm_pose)
+            utm_pose = msgify(Pose, utm_pose)
+
+        # Publish UTM pose
+        if self.publish_tf:
+            utm_to_odom = TransformStamped()
+            utm_to_odom.header.stamp = pose.header.stamp
+            utm_to_odom.header.frame_id = self.utm_frame
+            utm_to_odom.child_frame_id = self.odom_frame
+            utm_to_odom.transform.translation = utm_pose.position
+            utm_to_odom.transform.rotation = utm_pose.orientation
+
+            self.tf.transforms = [utm_to_odom]
+            self.tf_pub.publish(self.tf)
+
+        # Publish odometry for robot frame in local UTM frame
+        odom = Odometry()
+        odom.header.stamp = pose.header.stamp
+        odom.header.frame_id = self.local_utm_frame or self.utm_frame
+        odom.child_frame_id = pose.header.frame_id
+        odom.pose.pose = utm_pose
+
+        cov = np.array(pose.pose.covariance)
+        cov[cov < -1e6] = 1e6
+        cov = cov.tolist()
+        odom.pose.covariance = cov
+
+        # Compute velocity
+        if self.compute_velocity and self.last_odom is not None:
+            self.fill_velocity(odom)
+
+        # Publish odometry
+        if self.drop_incomplete and not pose.pose.covariance[-1] >= 0:
+            rospy.logwarn_throttle(5, 'Incomplete pose received, dropping.')
+        else:
+            self.utm_odom_pub.publish(odom)
+        self.last_odom = odom
+        
+    def gps_pose_cb(self, msg):
+        '''
+        Callback for GPS pose messages.
+
+        Parameters
+        ----------
+        msg : PoseWithCovarianceStamped
+            Pose message.
+        '''
+        try:
+            self.receive_pose(msg)
+        except utm.OutOfRangeError as e:
+            rospy.logerr_throttle(1, f'UTM conversion error: {e}')
+
+
+def main():
+    rospy.init_node('utm_odom', anonymous=True)
+    utm_odom = UtmOdom()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

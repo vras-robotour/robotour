@@ -13,15 +13,14 @@
 
     <buildtool_depend>catkin</buildtool_depend>
     
-    <depend>roscpp</depend>
+    <depend>naex</depend>
     <depend>rospy</depend>
+    <depend>tf2_ros</depend>
+    <depend>map_data</depend>
+    <depend>std_msgs</depend>
     <depend>nav_msgs</depend>
     <depend>sensor_msgs</depend>
-    <depend>std_msgs</depend>
     <depend>geometry_msgs</depend>
-    <depend>tf2_ros</depend>
-    <depend>naex</depend>
-    <depend>map_data</depend>
 
     <exec_depend condition="$ROS_DISTRO != noetic">python-utm-pip</exec_depend>
     <exec_depend condition="$ROS_DISTRO != noetic">python-numpy</exec_depend>
