@@ -3,7 +3,7 @@
     <node name="local_utm" pkg="robotour" type="local_utm"
           respawn="true" respawn_delay="1.0" output="screen">
 
-        <rosparam subst_value="true">
+        <rosparam>
             utm_frame: utm
             local_frame: local_utm
             max_var: [50.0, 50.0, 100.0]

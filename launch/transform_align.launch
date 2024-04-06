@@ -3,7 +3,7 @@
     <node name="transform_align" pkg="robotour" type="transform_align"
           respawn="true" respawn_delay="1.0" output="screen">
 
-        <rosparam subst_value="true">
+        <rosparam>
             # source_parent_frame: imu_odom
             source_child_frame: base_link
             # target_parent_frame: local_utm
