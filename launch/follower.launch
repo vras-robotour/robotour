@@ -43,4 +43,5 @@
         <!-- Outputs -->
         <remap from="clearance" to="~/unused/clearance"/>
         <remap from="cmd_vel" to="~/cmd_vel"/>
+    </node>
 </launch>

@@ -19,4 +19,5 @@
 
         <!-- Outputs -->
         <remap from="utm_odom" to="utm_odom"/>
+    </node>
 </launch>
