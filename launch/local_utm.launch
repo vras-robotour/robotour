@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <node name="local_utm" pkg="robotour" type="local_utm"
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <rosparam subst_value="true">
+            utm_frame: utm
+            local_frame: local_utm
+            max_var: [50.0, 50.0, 100.0]
+            wait_msgs: 50
+        </rosparam>
+
+        <!-- Inputs -->
+        <remap from="navsatfix" to="navsatfix"/>
+        <remap from="pose" to="pose"/>
+    </node>
+</launch>

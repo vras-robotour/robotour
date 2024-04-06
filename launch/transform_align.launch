@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <node name="transform_align" pkg="robotour" type="transform_align"
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <rosparam subst_value="true">
+            # source_parent_frame: imu_odom
+            source_child_frame: base_link
+            # target_parent_frame: local_utm
+            # target_child_frame: gnss
+            aligned_frame: gnss
+            min_interval: 1.0
+            min_distance: 1.0
+            keep_points: 100
+            keep_vectors: 10
+            frequency: 10.0
+        </rosparam>
+
+        <!-- Inputs -->
+        <remap from="source_pose" to="imu_odom"/>
+        <remap from="target_odom" to="utm_odom"/>
+    </node>
+</launch>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <node name="status_summary" pkg="robotour" type="status_summary"
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <!-- Inputs -->
+        <remap from="navsatfix" to="navsatfix"/>
+        <remap from="atteuler" to="atteuler"/>
+
+        <!-- Outputs -->
+        <remap from="summary" to="summary"/>
+    </node>
+</launch>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <node name="utm_odom" pkg="robotour" type="utm_odom"
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <rosparam subst_value="true">
+            utm_frame: utm
+            local_utm_frame: local_utm
+            odom_frame: imu_odom
+            robot_frame: base_link
+            publish_tf: false
+            tf_timeout: 1.0
+            drop_incomplete: true
+            compute_velocity: true
+        </rosparam>
+
+        <!-- Inputs -->
+        <remap from="gps_pose" to="pose"/>
+
+        <!-- Outputs -->
+        <remap from="utm_odom" to="utm_odom"/>
+</launch>

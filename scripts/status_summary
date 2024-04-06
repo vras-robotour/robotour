@@ -33,7 +33,7 @@ class StatusSummary:
 
         self.summary_pub = rospy.Publisher('status_summary', String, queue_size=5)
 
-        self.qrcode_sub = rospy.Subscriber('barcode', String, self.qrcode_cb, queue_size=5)
+        self.qrcode_sub = rospy.Subscriber('geocode', String, self.qrcode_cb, queue_size=5)
         self.navsatfix_sub = rospy.Subscriber('navsatfix', NavSatFix, self.navsatfix_cb, queue_size=5)
         self.atteuler_sub = rospy.Subscriber('atteuler', AttEuler, self.atteuler_cb, queue_size=5)
         self.planning_freq_sub = rospy.Subscriber('planning_freq', Float32, self.planning_freq_cb, queue_size=5)
