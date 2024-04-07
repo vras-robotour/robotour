@@ -78,7 +78,7 @@ class GoalParser:
 
         # Transform goal to target frame
         try:
-            target_goal = self.tf.lookup_transform(self.target_frame, self.utm_frame, rospy.Time())
+            target_goal = self.tf.lookup_transform(self.target_frame, self.utm_frame, rospy.Time(0))
         except TransformException as e:
             rospy.logerr(f'Transform failed: {e}')
             return
