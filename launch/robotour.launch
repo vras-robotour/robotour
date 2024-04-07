@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="robot_name" default="spot"/>
+    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv': 0, 'spot-3': 0}[robot])"/>
     <arg name="localize" default="true"/>
     <arg name="rviz" default="false"/>
     <arg name="mapdata_file" default="$(find map_data)/data/buchlovice.mapdata"/>
@@ -11,6 +11,9 @@
         <include file="$(dirname)/utm_odom.launch"/>
     </group>
 
+    <include file="$(find osm2qr)/launch/qr2geo.launch">
+        <arg name="robot" value="$(arg robot)"/>
+    </include>
     <include file="$(dirname)/goal_parser.launch"/>
     <include file="$(dirname)/status_summary.launch"/>
 
