@@ -88,7 +88,7 @@ class UtmOdom:
         rospy.loginfo('Waiting for local UTM origin...')
         while not rospy.is_shutdown():
             try:
-                utm_to_local = self.tf.lookup_transform(self.local_utm_frame, self.utm_frame, rospy.Time(), rospy.Duration(60))
+                utm_to_local = self.tf.lookup_transform(self.local_utm_frame, self.utm_frame, rospy.Time(0), rospy.Duration(60))
                 self.utm_to_local = numpify(utm_to_local.transform)
                 rospy.loginfo(f'UTM to local transform found: {self.utm_to_local}')
                 break
