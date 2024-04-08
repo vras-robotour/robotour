@@ -21,6 +21,8 @@
         <arg name="mapdata_file" value="$(arg mapdata_file)"/>
         <arg name="grid_topic" value="osm_grid"/>
     </include>
+    <include file="$(dirname)/geometric_traversability.launch"/>
+    <include file="$(dirname)/semantic_traversability.launch"/>
 
     <include file="$(dirname)/planner.launch"/>
     <include file="$(dirname)/follower.launch"/>

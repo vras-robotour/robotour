@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <arg name="nodelet_manager" default="geometric_traversability_manager"/>
+    <arg name="nodelet_action" default="load"/>
+
+    <node if="$(eval nodelet_manager == 'geometric_traversability_manager')"
+          name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager"
+          respawn="true" respawn_delay="1.0" output="log">
+        <param name="num_worker_threads" value="4"/>
+    </node>
+
+    <node name="cloud_range_filter_max" pkg="nodelet" type="nodelet"
+          args="$(arg nodelet_action) cloud_proc/range_filter $(arg nodelet_manager)"
+          respawn="true" respawn_delay="1.0" output="log">
+        <rosparam>
+            field: x
+            max: 5.0
+        </rosparam>
+        <remap from="input" to="TODO"/>
+        <remap from="output" to="TODO"/>
+    </node>
+
+    <node name="cloud_voxel_filter_max" pkg="nodelet" type="nodelet"
+          args="$(arg nodelet_action) cloud_proc/voxel_filter $(arg nodelet_manager)"
+          respawn="true" respawn_delay="1.0" output="log">
+        <rosparam>
+            field: x
+            grid: 0.125
+            zero_valid: false
+        </rosparam>
+        <remap from="input" to="TODO"/>
+        <remap from="output" to="TODO"/>
+    </node>
+
+    <node name="traversability_estimation" pkg="nodelet" type="nodelet"
+          args="$(arg nodelet_action) naex/traversability $(arg nodelet_manager)"
+          respawn="true" respawn_delay="1.0" output="screen">
+        <rosparam>
+            min_z: -1.5
+            max_z: 0.5
+            support_radius: 0.25
+            min_support: 3
+            inclination_radius: 0.4
+            clearance_radius: 0.7
+            clearance_low: 0.1
+            clearance_high: 0.6
+            # inclination_weight: 1.637  <!-- 35 deg = unit cost -->
+            # normal_std_weight: 10.0  <!-- 0.10 m = unit cost -->
+            # obstacle_weight: 0.2  <!-- 5 obstacle points = unit cost -->
+            inclination_weight: 1.637  <!-- 35 deg = unit cost -->
+            normal_std_weight: 100.0  <!-- 0.05 m = unit cost -->
+            obstacle_weight: 0.5  <!-- 2 obstacle points = unit cost -->
+            # inclination_weight: 5.0  <!-- 35 deg = unit cost -->
+            # normal_std_weight: 30.0  <!-- 0.10 m = unit cost -->
+            # obstacle_weight: 2.0  <!-- 5 obstacle points = unit cost -->
+            remove_low_support: true
+            fixed_frame: imu_odom
+            timeout: 1.0
+        </rosparam>
+        <remap from="input" to="TODO"/>
+        <remap from="output" to="TODO"/>
+    </node>
+</launch>
