@@ -287,3 +287,12 @@ class TransformAlign:
 
     def receive_target_odom(self, msg):
         self.receive_odom(msg, TARGET)
+
+
+def main():
+    rospy.init_node('transform_align')
+    node = TransformAlign()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

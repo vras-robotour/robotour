@@ -108,14 +108,14 @@ class UtmOdom:
         '''
         # Compute pose delta
         T0 = quaternion_matrix(slots(self.last_odom.pose.pose.orientation))
-        T0[:3, 3] = self.last_odom.pose.pose.position.x, self.last_odom.pose.pose.position.y, self.last_odom.pose.pose.position.z
+        T0[:3, 3] = slots(self.last_odom.pose.pose.position)
         T1 = quaternion_matrix(slots(odom.pose.pose.orientation))
-        T1[:3, 3] = odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z
+        T1[:3, 3] = slots(odom.pose.pose.position)
         delta = np.matmul(T1, se3_inverse(T0))
 
         # Compute velocity
         dt = (odom.header.stamp - self.last_odom.header.stamp).to_sec()
-        odom.twist.twist.linear = Vector3(*delta[:3, 3] / dt)
+        odom.twist.twist.linear = Vector3(*(delta[:3, 3] / dt))
 
         # Compute angular velocity
         euler = euler_from_matrix(delta)

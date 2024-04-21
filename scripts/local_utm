@@ -135,7 +135,7 @@ class LocalUtm:
         pos = msg.pose.pose.position
         vars = np.array(msg.pose.covariance[:18:7])
 
-        self.process_data(msg.header.stamp, [pos.x, pos.y, pos.z], vars)
+        self.process_data(msg.header.stamp, [pos.y, pos.x, pos.z], vars)
 
 
 def main():
