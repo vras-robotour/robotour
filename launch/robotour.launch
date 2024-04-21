@@ -27,5 +27,7 @@
     <include file="$(dirname)/planner.launch"/>
     <include file="$(dirname)/follower.launch"/>
 
-    <include if="$(eval rviz)" file="$(dirname)/rviz.launch"/>
+    <include if="$(eval rviz)" file="$(dirname)/rviz.launch">
+        <arg name="robot" value="$(arg robot)"/>
+    </include>
 </launch>
