@@ -56,12 +56,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        base_link:
-          Value: true
-        osm_map_sat:
-          Value: true
-        utm_local:
-          Value: true
       Marker Alpha: 1
       Marker Scale: 200
       Name: TF
@@ -69,10 +63,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        osm_map_sat:
-          utm_local:
-            base_link:
-              {}
+        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
@@ -232,7 +223,7 @@ Visualization Manager:
       Near Clip Distance: 0.009999999776482582
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
-      Yaw: 4.410383701324463
+      Yaw: 4.710390090942383
     Saved: ~
 Window Geometry:
   Displays:

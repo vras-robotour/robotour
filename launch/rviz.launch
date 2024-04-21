@@ -14,18 +14,11 @@
     <arg name="camera_segmentation" value="TODO" if="$(eval robot == 'marv')"/>
     <arg name="camera_segmentation" value="/camera_front/segmentation" if="$(eval robot == 'spot-3')"/>
 
-
     <!-- Republish camera topics for easy rviz visualization -->
     <node name="republish_color" type="republish" pkg="image_transport" output="screen"
           args="compressed in:=$(arg camera_topic) raw out:=/camera/color" />
     <node name="republish_segmentation" type="republish" pkg="image_transport" output="screen"
           args="compressed in:=$(arg camera_segmentation) raw out:=/camera/segmentation" />
-
-    <!-- Testing Aerial map -->
-    <node pkg="rostopic" type="rostopic" name="fake_gps_fix" 
-          args="pub /gps/fix sensor_msgs/NavSatFix --latch --file=$(find rviz_satellite)/launch/demo.gps" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_fake" args="100 200 5 0.3 0 0 osm_map_sat utm_local" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_fake2" args="1 1 1 0 0 0 utm_local base_link" />
 
     <!-- RViz -->
     <node name="rviz" pkg="rviz" type="rviz" output="screen"

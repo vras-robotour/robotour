@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <!-- Testing Aerial map -->
+    <node pkg="rostopic" type="rostopic" name="fake_gps_fix" 
+          args="pub /gps/fix sensor_msgs/NavSatFix --latch --file=$(find rviz_satellite)/launch/demo.gps" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_fake" args="100 200 5 0.3 0 0 osm_map_sat utm_local" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf_fake2" args="1 1 1 0 0 0 utm_local base_link" />
+</launch>
