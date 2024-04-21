@@ -4,6 +4,7 @@ import utm
 import numpy as np
 
 import rospy
+from utils import slots
 from nav_msgs.msg import Odometry
 from ros_numpy import numpify, msgify
 from tf.transformations import quaternion_matrix, euler_from_matrix
@@ -106,9 +107,9 @@ class UtmOdom:
             Odometry message.
         '''
         # Compute pose delta
-        T0 = quaternion_matrix(self.last_odom.pose.pose.orientation)
+        T0 = quaternion_matrix(slots(self.last_odom.pose.pose.orientation))
         T0[:3, 3] = self.last_odom.pose.pose.position.x, self.last_odom.pose.pose.position.y, self.last_odom.pose.pose.position.z
-        T1 = quaternion_matrix(odom.pose.pose.orientation)
+        T1 = quaternion_matrix(slots(odom.pose.pose.orientation))
         T1[:3, 3] = odom.pose.pose.position.x, odom.pose.pose.position.y, odom.pose.pose.position.z
         delta = np.matmul(T1, se3_inverse(T0))
 
@@ -118,11 +119,13 @@ class UtmOdom:
 
         # Compute angular velocity
         euler = euler_from_matrix(delta)
-        odom.twist.twist.angular = Vector3(*euler[0:3] / dt)
+        odom.twist.twist.angular.x = euler[0] / dt
+        odom.twist.twist.angular.y = euler[1] / dt
+        odom.twist.twist.angular.z = euler[2] / dt
 
     def receive_pose(self, pose):
         '''
-        Transformed received pose and publish odometry.
+        Transform received pose and publish odometry.
 
         Parameters
         ----------
@@ -148,8 +151,7 @@ class UtmOdom:
             utm_to_odom.transform.translation = utm_pose.position
             utm_to_odom.transform.rotation = utm_pose.orientation
 
-            self.tf.transforms = [utm_to_odom]
-            self.tf_pub.publish(self.tf)
+            self.tf_pub.sendTransform(utm_to_odom)
 
         # Publish odometry for robot frame in local UTM frame
         odom = Odometry()

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <node name="goal_parser" pkg="robotour" type="goal_parser"
+    <arg name="test" default="false"/>
+
+    <node if="$(eval not test)" name="goal_parser" pkg="robotour" type="goal_parser"
           respawn="true" respawn_delay="1.0" output="screen">
 
         <rosparam>
@@ -14,6 +16,22 @@
 
         <!-- Inputs -->
         <remap from="geocode" to="geocode"/>
+        <remap from="get_plan" to="get_plan"/>
+    </node>
+
+    <node if="$(eval test)" name="goal_parser" pkg="robotour" type="test_goal_parser"
+          respawn="true" respawn_delay="1.0" output="screen">
+
+        <rosparam>
+            utm_frame: utm
+            altitude: 0.0
+            target_frame: local_utm
+            target_altitude: 0.0
+            tf_timeout: 1.0
+            tolerance: 5.0
+        </rosparam>
+
+        <!-- Inputs -->
         <remap from="get_plan" to="get_plan"/>
     </node>
 </launch>

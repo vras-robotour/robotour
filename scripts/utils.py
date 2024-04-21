@@ -4,6 +4,9 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 
+def slots(msg):
+    return [getattr(msg, var) for var in msg.__slots__]
+
 def xyzw(q):
     return np.array([q[1], q[2], q[3], q[0]])
 
