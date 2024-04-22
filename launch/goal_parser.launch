@@ -23,11 +23,8 @@
           respawn="true" respawn_delay="1.0" output="screen">
 
         <rosparam>
-            utm_frame: utm
-            altitude: 0.0
-            target_frame: local_utm
+            local_frame: local_utm
             target_altitude: 0.0
-            tf_timeout: 1.0
             tolerance: 5.0
         </rosparam>
 

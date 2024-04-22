@@ -1,54 +1,25 @@
 #!/usr/bin/env python
 
-import utm
 import numpy as np
 
 import rospy
-from ros_numpy import numpify
-from std_msgs.msg import String
 from nav_msgs.srv import GetPlan
+from tf2_ros import StaticTransformBroadcaster
 from geometry_msgs.msg import Point, Vector3, PoseStamped, TransformStamped
-from tf2_ros import Buffer, TransformListener, TransformException, StaticTransformBroadcaster
 
 
-def geocode_to_latlon(string):
-    '''
-    Convert geocode string to latitude and longitude.
-
-    Parameters
-    ----------
-    string : str
-        Geocode string.
-
-    Returns
-    -------
-    lat, lon : float
-        Latitude and longitude.
-    '''
-    tag, string = string.split(':')
-    assert tag == 'geo', f'Invalid geocode tag: {tag}'
-    lat, lon = map(float, string.split(','))
-    return lat, lon
-
-
-class GoalParser:
+class RVizGoalParser:
     def __init__(self):
-        self.utm_frame = rospy.get_param('~utm_frame', 'utm')
-        self.altitude = rospy.get_param('~altitude', 0)
-        self.target_frame = rospy.get_param('~target_frame', 'local_utm')
+        self.local_frame = rospy.get_param('~local_frame', 'local_utm')
         self.target_altitude = rospy.get_param('~target_altitude', 0)
-        self.tf_timeout = rospy.Duration(rospy.get_param('~tf_timeout', 1))
         self.tolerance = rospy.get_param('~tolerance', 32)
 
         self.tf_pub = StaticTransformBroadcaster()
 
-        self.tf = Buffer()
-        self.tf_sub = TransformListener(self.tf)
-
         self.get_plan = None
         self.wait_for_get_plan()
 
-        self.geocode_sub = rospy.Subscriber('geocode', String, self.geocode_cb, queue_size=5)
+        self.nav_pose_sub = rospy.Subscriber('move_base_simple/goal', PoseStamped, self.nav_pose_cb)
 
     def wait_for_get_plan(self):
         '''
@@ -60,37 +31,23 @@ class GoalParser:
         self.get_plan = rospy.ServiceProxy('get_plan', GetPlan)
         rospy.logwarn(f'Using GetPlan service: {self.get_plan.resolved_name}')
 
-    def geocode_cb(self, msg):
+    def nav_pose_cb(self, msg):
         '''
-        Callback for geocode message.
-
+        Callback for move_base_simple/goal topic
+        
         Parameters
         ----------
-        msg : str
-            Geocode message.
+        msg : PoseStamped
+            PoseStamped message containing the goal pose
         '''
         self.wait_for_get_plan()
 
-        lat, lon = geocode_to_latlon(msg.data)
-        easting, northing = utm.from_latlon(lat, lon)[:2]
-        rospy.loginfo(f'UTM goal: {easting}, {northing}')
-        utm_goal = np.array([easting, northing, self.altitude]).reshape(3,1)
-
-        # Transform goal to target frame
-        try:
-            target_goal = self.tf.lookup_transform(self.target_frame, self.utm_frame, self.tf_timeout)
-        except TransformException as e:
-            rospy.logerr(f'Transform failed: {e}')
-            return
-        target_goal = numpify(target_goal.transform)
-        target_point = np.dot(target_goal, np.vstack([utm_goal, 1]))[:3]
-        target_point[2] = self.target_altitude
-        rospy.loginfo(f'Target goal: {target_point.ravel().tolist()}')
+        target_point = np.array([msg.pose.position.x, msg.pose.position.y, self.target_altitude])
 
         # Publish tf transform
         transform = TransformStamped()
         transform.header.stamp = rospy.Time.now()
-        transform.header.frame_id = self.target_frame
+        transform.header.frame_id = self.local_frame
         transform.child_frame_id = 'goal'
         transform.transform.translation = Vector3(*target_point)
         transform.transform.rotation.w = 1
@@ -99,14 +56,14 @@ class GoalParser:
         # Create goal pose
         goal = PoseStamped()
         goal.header.stamp = rospy.Time.now()
-        goal.header.frame_id = self.target_frame
+        goal.header.frame_id = self.local_frame
         goal.pose.position = Point(*target_point)
         goal.pose.orientation.w = 1
 
         # Create start pose
         start = PoseStamped()
         start.header.stamp = rospy.Time.now()
-        start.header.frame_id = self.target_frame
+        start.header.frame_id = self.local_frame
         start.pose.position = Point(float('nan'), float('nan'), float('nan'))  # Use current position
         start.pose.orientation.w = 1
 
@@ -125,8 +82,8 @@ class GoalParser:
 
 def main():
     rospy.init_node('goal_parser')
-    goal_parser = GoalParser()
+    node = RVizGoalParser()
     rospy.spin()
-    
+
 if __name__ == '__main__':
     main()
