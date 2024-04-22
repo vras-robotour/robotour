@@ -19,7 +19,7 @@
         <remap from="get_plan" to="get_plan"/>
     </node>
 
-    <node if="$(eval test)" name="goal_parser" pkg="robotour" type="test_goal_parser"
+    <node if="$(eval test)" name="goal_parser" pkg="robotour" type="rviz_goal_parser"
           respawn="true" respawn_delay="1.0" output="screen">
 
         <rosparam>

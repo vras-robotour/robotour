@@ -4,6 +4,7 @@
     <arg name="localize" default="true"/>
     <arg name="rviz" default="false"/>
     <arg name="mapdata_file" default="$(find map_data)/data/buchlovice.mapdata"/>
+    <arg name="test" default="false"/>
 
     <group if="$(eval localize)">
         <include file="$(dirname)/local_utm.launch"/>
@@ -14,7 +15,9 @@
     <include file="$(find osm2qr)/launch/qr2geo.launch">
         <arg name="robot" value="$(arg robot)"/>
     </include>
-    <include file="$(dirname)/goal_parser.launch"/>
+    <include file="$(dirname)/goal_parser.launch">
+        <arg name="test" value="$(arg test)"/>
+    </include>
     <include file="$(dirname)/status_summary.launch"/>
 
     <include file="$(find map_data)/launch/osm_cloud.launch">
