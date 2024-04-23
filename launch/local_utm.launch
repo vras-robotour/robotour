@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
     <arg name="test" default="false"/>
+    <arg name="case" default="buchlovice"/>
 
     <node if="$(eval not test)" name="local_utm" pkg="robotour" type="local_utm"
           respawn="true" respawn_delay="1.0" output="screen">
@@ -18,8 +19,12 @@
     </node>
 
     <!-- Buchlovice -->
-    <node if="$(eval test)" name="tf_static_utm_local_utm" pkg="tf2_ros"
+    <node if="$(eval test and case == 'buchlovice')" name="tf_static_utm_local_utm" pkg="tf2_ros"
           type="static_transform_publisher" args="670667.00 5439425.14 0 0 0 0 utm local_utm"/>
+    <!-- Stromovka -->
+    <node if="$(eval test and case == 'stromovka')" name="tf_static_utm_local_utm" pkg="tf2_ros"
+          type="static_transform_publisher" args="458378.63 5550538.10 0 0 0 0 utm local_utm"/>
+
     <node if="$(eval test)" name="tf_static_local_utm_base_link" pkg="tf2_ros"
           type="static_transform_publisher" args="0 0 0 0 0 0 local_utm base_link"/>
     
