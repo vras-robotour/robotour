@@ -3,11 +3,16 @@
     <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv': 0, 'spot-3': 0}[robot])"/>
     <arg name="localize" default="true"/>
     <arg name="rviz" default="false"/>
-    <arg name="mapdata_file" default="$(find map_data)/data/buchlovice.mapdata"/>
+    <arg name="mapdata_path" default="$(find map_data)/data/"/>
+    <arg name="mapdata_file" default="buchlovice.mapdata"/>
     <arg name="test" default="false"/>
+    <arg name="test_case" default="buchlovice"/>
 
     <group if="$(eval localize)">
-        <include file="$(dirname)/local_utm.launch"/>
+        <include file="$(dirname)/local_utm.launch">
+            <arg name="test" value="$(arg test)"/>
+            <arg name="case" value="$(arg test_case)"/>
+        </include>
         <include file="$(dirname)/transform_align.launch"/>
         <include file="$(dirname)/utm_odom.launch"/>
     </group>
@@ -21,6 +26,7 @@
     <include file="$(dirname)/status_summary.launch"/>
 
     <include file="$(find map_data)/launch/osm_cloud.launch">
+        <arg name="mapdata_path" value="$(arg mapdata_path)"/>
         <arg name="mapdata_file" value="$(arg mapdata_file)"/>
         <arg name="grid_topic" value="osm_grid"/>
     </include>
@@ -32,5 +38,9 @@
 
     <include if="$(eval rviz)" file="$(dirname)/rviz.launch">
         <arg name="robot" value="$(arg robot)"/>
+    </include>
+
+    <include if="$(eval test)" file="$(dirname)/fake_gps.launch">
+        <arg name="file" value="$(arg test_case).gps"/>
     </include>
 </launch>

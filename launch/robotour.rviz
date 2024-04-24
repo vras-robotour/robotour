@@ -76,7 +76,7 @@ Visualization Manager:
       Frames:
         All Enabled: true
       Marker Alpha: 1
-      Marker Scale: 1
+      Marker Scale: 2
       Name: TF
       Show Arrows: true
       Show Axes: true
@@ -86,7 +86,7 @@ Visualization Manager:
       Update Interval: 0
       Value: true
     - Align Bottom: false
-      Background Alpha: 0.800000011920929
+      Background Alpha: 0.4000000059604645
       Background Color: 0; 0; 0
       Class: jsk_rviz_plugin/String
       Enabled: true
@@ -98,12 +98,12 @@ Visualization Manager:
       Topic: /status_summary
       Value: true
       font: DejaVu Sans Mono
-      height: 128
+      height: 60
       left: 10
       line width: 2
       text size: 12
       top: 40
-      width: 128
+      width: 300
     - Class: rviz/Image
       Enabled: true
       Image Topic: /camera/color
@@ -274,7 +274,7 @@ Visualization Manager:
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.10000000149011612
+      Line Width: 0.15000000596046448
       Name: Path
       Offset:
         X: 0
