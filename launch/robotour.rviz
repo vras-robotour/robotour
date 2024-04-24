@@ -3,7 +3,8 @@ Panels:
     Help Height: 78
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /Global Options1
       Splitter Ratio: 0.5
     Tree Height: 845
   - Class: rviz/Selection
@@ -25,14 +26,14 @@ Panels:
     SyncMode: 0
     SyncSource: ""
 Preferences:
-  PromptSaveOnExit: true
+  PromptSaveOnExit: false
 Toolbars:
   toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
-    - Alpha: 0.5
-      Cell Size: 1
+    - Alpha: 0.20000000298023224
+      Cell Size: 5
       Class: rviz/Grid
       Color: 160; 160; 164
       Enabled: true
@@ -46,8 +47,26 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 50
+      Plane Cell Count: 100
       Reference Frame: <Fixed Frame>
+      Value: true
+    - Alpha: 0.30000001192092896
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: BaseLinkGrid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: base_link
       Value: true
     - Class: rviz/TF
       Enabled: true
@@ -66,6 +85,25 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: true
+    - Align Bottom: false
+      Background Alpha: 0.800000011920929
+      Background Color: 0; 0; 0
+      Class: jsk_rviz_plugin/String
+      Enabled: true
+      Foreground Alpha: 0.800000011920929
+      Foreground Color: 25; 255; 240
+      Name: Summary
+      Overtake Color Properties: true
+      Overtake Position Properties: true
+      Topic: /status_summary
+      Value: true
+      font: DejaVu Sans Mono
+      height: 128
+      left: 10
+      line width: 2
+      text size: 12
+      top: 40
+      width: 128
     - Class: rviz/Image
       Enabled: true
       Image Topic: /camera/color
@@ -122,10 +160,10 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 0; 0
-      Max Intensity: 5
+      Max Intensity: 1
       Min Color: 0; 255; 0
       Min Intensity: 0
-      Name: PointCloud2
+      Name: Map cloud
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: false
@@ -137,16 +175,106 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: false
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: cost
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 0; 0
+      Max Intensity: 1
+      Min Color: 0; 255; 0
+      Min Intensity: 0
+      Name: OSM grid
+      Position Transformer: XYZ
+      Queue Size: 2
+      Selectable: false
+      Size (Pixels): 3
+      Size (m): 0.10000000149011612
+      Style: Flat Squares
+      Topic: /osm_grid
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: cost
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 0; 0
+      Max Intensity: 1
+      Min Color: 0; 255; 0
+      Min Intensity: 0
+      Name: Geometric cloud
+      Position Transformer: XYZ
+      Queue Size: 2
+      Selectable: false
+      Size (Pixels): 3
+      Size (m): 0.10000000149011612
+      Style: Flat Squares
+      Topic: /camera/color/geometric
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: false
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 0; 0
+      Max Intensity: 1
+      Min Color: 0; 255; 0
+      Min Intensity: 0
+      Name: Semantic cloud
+      Position Transformer: XYZ
+      Queue Size: 2
+      Selectable: false
+      Size (Pixels): 3
+      Size (m): 0.10000000149011612
+      Style: Flat Squares
+      Topic: /camera/color/semantic
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: false
     - Alpha: 0.5
       Buffer Length: 1
       Class: rviz/Path
-      Color: 0; 255; 0
+      Color: 0; 0; 255
       Enabled: true
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.05000000074505806
+      Line Width: 0.10000000149011612
       Name: Path
       Offset:
         X: 0
@@ -159,6 +287,41 @@ Visualization Manager:
       Shaft Diameter: 0.10000000149011612
       Shaft Length: 0.10000000149011612
       Topic: /path
+      Unreliable: false
+      Value: true
+    - Angle Tolerance: 0.5
+      Class: rviz/Odometry
+      Covariance:
+        Orientation:
+          Alpha: 0.5
+          Color: 255; 255; 127
+          Color Style: Unique
+          Frame: Local
+          Offset: 1
+          Scale: 1
+          Value: true
+        Position:
+          Alpha: 0.30000001192092896
+          Color: 204; 51; 204
+          Scale: 1
+          Value: true
+        Value: true
+      Enabled: true
+      Keep: 100
+      Name: UTM odometry
+      Position Tolerance: 0.5
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 1
+        Axes Radius: 0.10000000149011612
+        Color: 255; 25; 0
+        Head Length: 0.30000001192092896
+        Head Radius: 0.10000000149011612
+        Shaft Length: 1
+        Shaft Radius: 0.05000000074505806
+        Value: Arrow
+      Topic: /utm_odom
       Unreliable: false
       Value: true
     - Alpha: 1
@@ -205,7 +368,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 115.84625244140625
+      Distance: 33.9790153503418
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

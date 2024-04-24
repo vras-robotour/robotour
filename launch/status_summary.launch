@@ -8,6 +8,6 @@
         <remap from="atteuler" to="atteuler"/>
 
         <!-- Outputs -->
-        <remap from="summary" to="summary"/>
+        <remap from="status_summary" to="status_summary"/>
     </node>
 </launch>
