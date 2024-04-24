@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv': 0, 'spot-3': 0}[robot])"/>
+    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
 
     <!-- Camera topic -->
-    <arg name="camera_topic" value="TODO" if="$(eval robot == 'ctu-robot')"/>
+    <arg name="camera_topic" value="/viz/camera_4/image" if="$(eval robot == 'ctu-robot')"/>
     <arg name="camera_topic" value="TODO" if="$(eval robot == 'flip')"/>
-    <arg name="camera_topic" value="TODO" if="$(eval robot == 'marv')"/>
+    <arg name="camera_topic" value="/camera_front/image_color" if="$(eval robot == 'marv-robot')"/>
     <arg name="camera_topic" value="/camera_front/image_color" if="$(eval robot == 'spot-3')"/>
 
     <!-- Segmentation topic -->
-    <arg name="camera_segmentation" value="TODO" if="$(eval robot == 'ctu-robot')"/>
+    <arg name="camera_segmentation" value="/viz/camera_4/image/segmentation" if="$(eval robot == 'ctu-robot')"/>
     <arg name="camera_segmentation" value="TODO" if="$(eval robot == 'flip')"/>
-    <arg name="camera_segmentation" value="TODO" if="$(eval robot == 'marv')"/>
-    <arg name="camera_segmentation" value="/camera_front/segmentation" if="$(eval robot == 'spot-3')"/>
+    <arg name="camera_segmentation" value="/camera_front/color_image/segmentation" if="$(eval robot == 'marv-robot')"/>
+    <arg name="camera_segmentation" value="/camera_front/color_image/segmentation" if="$(eval robot == 'spot-3')"/>
 
     <!-- Republish camera topics for easy rviz visualization -->
     <node name="republish_color" type="republish" pkg="image_transport" output="screen"
