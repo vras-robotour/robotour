@@ -2,6 +2,5 @@
 <launch>
     <arg name="file" default="demo.gps" doc="File with GPS fix to be published."/>
 
-    <!-- Send a static GPS fix to every new subscriber. Edit latitude and longitude in launch/demo.gps to use your own position. -->
     <node pkg="rostopic" type="rostopic" name="fake_gps_fix" args="pub /navsatfix sensor_msgs/NavSatFix --latch --file=$(find robotour)/data/$(arg file)"/>
 </launch>
