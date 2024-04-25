@@ -163,14 +163,14 @@ Visualization Manager:
       Max Intensity: 1
       Min Color: 0; 255; 0
       Min Intensity: 0
-      Name: Map cloud
+      Name: Planner map cloud
       Position Transformer: XYZ
       Queue Size: 2
       Selectable: false
       Size (Pixels): 3
       Size (m): 0.10000000149011612
       Style: Flat Squares
-      Topic: /map
+      Topic: /planner_map
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false

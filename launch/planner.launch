@@ -35,7 +35,7 @@
         <remap from="input_cloud_2" to="TODO"/>
 
         <!-- Outputs -->
-        <remap from="map" to="map"/>
+        <remap from="map" to="planner_map"/>
         <remap from="grid" to="grid"/>
         <remap from="local_map" to="local_map"/>
         <remap from="path" to="path"/>
