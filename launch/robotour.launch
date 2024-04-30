@@ -40,7 +40,10 @@
         <arg name="robot" value="$(arg robot)"/>
     </include>
 
-    <include if="$(eval test)" file="$(dirname)/fake_gps.launch">
-        <arg name="file" value="$(arg test_case).gps"/>
-    </include>
+    <group if="$(eval test)">
+        <include file="$(dirname)/fake_gps.launch">
+            <arg name="file" value="$(arg test_case).gps"/>
+        </include>
+        <include file="$(find osm2qr)/launch/rviz2qr.launch"/>
+    </group>
 </launch>
