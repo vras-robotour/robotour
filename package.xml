@@ -15,6 +15,7 @@
     
     <depend>naex</depend>
     <depend>rospy</depend>
+    <depend>osm2qr</depend>
     <depend>tf2_ros</depend>
     <depend>map_data</depend>
     <depend>std_msgs</depend>
@@ -22,6 +23,7 @@
     <depend>cloud_proc</depend>
     <depend>sensor_msgs</depend>
     <depend>geometry_msgs</depend>
+    <depend>image_segmentation</depend>
 
     <exec_depend condition="$ROS_DISTRO != noetic">python-utm-pip</exec_depend>
     <exec_depend condition="$ROS_DISTRO != noetic">python-numpy</exec_depend>
