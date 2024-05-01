@@ -8,24 +8,11 @@
     <arg name="camera_topic" value="/camera_front/image_color" if="$(eval robot == 'marv-robot')"/>
     <arg name="camera_topic" value="/camera_front/image_color" if="$(eval robot == 'spot-3')"/>
 
-    <!-- Segmentation topic -->
-    <arg name="camera_segmentation" value="/viz/camera_4/image/segmentation" if="$(eval robot == 'ctu-robot')"/>
-    <arg name="camera_segmentation" value="TODO" if="$(eval robot == 'flip')"/>
-    <arg name="camera_segmentation" value="/camera_front/color_image/segmentation" if="$(eval robot == 'marv-robot')"/>
-    <arg name="camera_segmentation" value="/camera_front/color_image/segmentation" if="$(eval robot == 'spot-3')"/>
-
-    <!-- Republish camera topics for easy rviz visualization -->
-    <!-- <node name="republish_color" type="republish" pkg="image_transport" output="screen"
-          args="compressed in:=$(arg camera_topic) raw out:=/camera/color" />
-    <node name="republish_segmentation" type="republish" pkg="image_transport" output="screen"
-          args="compressed in:=$(arg camera_segmentation) raw out:=/camera/segmentation" /> -->
-
     <!-- RViz -->
     <node name="rviz" pkg="rviz" type="rviz" output="screen"
           args="-d $(find robotour)/data/robotour.rviz" respawn="true" respawn_delay="1.0">
 
         <remap from="camera/color" to="$(arg camera_topic)"/>
-        <remap from="camera/segmentation" to="$(arg camera_segmentation)"/>
     </node>
 
     <node name="set_rviz_log_level" pkg="rosservice" type="rosservice"
