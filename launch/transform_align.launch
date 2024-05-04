@@ -3,7 +3,7 @@
     <node name="transform_align" pkg="robotour" type="transform_align" output="screen">
 
         <rosparam>
-            # source_parent_frame: imu_odom
+            # source_parent_frame: odom
             source_child_frame: base_link
             # target_parent_frame: local_utm
             # target_child_frame: gnss
@@ -16,7 +16,7 @@
         </rosparam>
 
         <!-- Inputs -->
-        <remap from="source_pose" to="imu_odom"/>
+        <remap from="source_pose" to="odom"/>
         <remap from="target_odom" to="utm_odom"/>
     </node>
 </launch>

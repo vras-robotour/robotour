@@ -6,7 +6,7 @@
         <rosparam>
             utm_frame: utm
             local_utm_frame: local_utm
-            odom_frame: imu_odom
+            odom_frame: odom
             robot_frame: base_link
             publish_tf: false
             tf_timeout: 1.0

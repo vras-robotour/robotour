@@ -5,7 +5,7 @@
 
         <rosparam>
             map_frame: local_utm
-            odom_frame: imu_odom
+            odom_frame: odom
             robot_frame: base_link
             control_freq: 10.0
             goal_reached_dist: 1.5
