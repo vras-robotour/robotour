@@ -3,7 +3,9 @@
     <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
     <arg name="test" default="false"/>
 
-    <include file="$(dirname)/geometric_traversability.launch"/>
     <include file="$(dirname)/semantic_traversability.launch"/>
+    <include file="$(dirname)/point_cloud_color.launch">
+        <arg name="robot" value="$(arg robot)"/>
+    </include>
 
 </launch>
