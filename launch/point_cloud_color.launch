@@ -36,7 +36,7 @@
         <remap from="cloud_in" to="$(arg cloud_in)"/>
         <remap from="camera_0/camera_info" to="$(arg camera_info)"/>
 
-        <remap from="point_cloud_color" to="semantic_segmentation"/>
+        <remap from="cloud_out" to="semantic_traversability"/>
 
         <param name="image_transport"        value="$(arg image_transport)"/>
         <param name="point_cloud_transport"  value="$(arg point_cloud_transport)"/>

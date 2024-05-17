@@ -4,8 +4,4 @@
     <arg name="test" default="false"/>
 
     <include file="$(dirname)/semantic_traversability.launch"/>
-    <include file="$(dirname)/point_cloud_color.launch">
-        <arg name="robot" value="$(arg robot)"/>
-    </include>
-
 </launch>
