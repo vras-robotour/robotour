@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv': 0, 'spot-3': 0}[robot])"/>
+    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
     <arg name="nodelet_manager" default="geometric_traversability_manager"/>
     <arg name="nodelet_action" default="load"/>
+    <arg name="height" default="128"/>
+    <arg if="$(eval 'spot' in robot)" name="width" default="1024"/>
+    <arg if="$(eval 'spot' not in robot)" name="width" default="256"/>
+    <arg name="azimuth_only" default="$(eval height == 128)"/>
+    <arg name="fov_elevation" default="90"/>
 
     <arg name="input" default="points_filtered" if="$(eval arg('robot') == 'ctu-robot')"/>
     <arg name="input" default="TODO" if="$(eval arg('robot') == 'flip')"/>
@@ -75,7 +80,7 @@
             # normal_std_weight: 30.0  <!-- 0.10 m = unit cost -->
             # obstacle_weight: 2.0  <!-- 5 obstacle points = unit cost -->
             remove_low_support: true
-            fixed_frame: imu_odom
+            fixed_frame: odom
             timeout: 1.0
         </rosparam>
         <remap from="input" to="max_points_125mm"/>

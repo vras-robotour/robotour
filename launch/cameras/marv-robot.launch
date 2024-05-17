@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <machine name="jetson" user="robot" password="nifti" address="jetson"  env-loader="/home/robot/ros_env_setup.sh" />
+  <include file="$(dirname)/omnicam_5.launch" pass_all_args="true">
+    <arg name="robot_name" value="marv-robot"/>
+  </include>
+</launch>
