@@ -27,7 +27,7 @@
     <arg name="point_cloud_transport" default="raw" />
     <arg name="tf_prefix" default="" />
 
-    <node name="point_cloud_color" pkg="nodelet" type="nodelet"
+    <node name="semantic_to_cloud" pkg="nodelet" type="nodelet"
           args="standalone point_cloud_color/point_cloud_color" respawn="true"
           respawn_delay="1" output="screen">
 
@@ -35,6 +35,8 @@
         <remap from="camera_0/image" to="$(arg camera_in)"/>
         <remap from="cloud_in" to="$(arg cloud_in)"/>
         <remap from="camera_0/camera_info" to="$(arg camera_info)"/>
+
+        <remap from="point_cloud_color" to="semantic_segmentation"/>
 
         <param name="image_transport"        value="$(arg image_transport)"/>
         <param name="point_cloud_transport"  value="$(arg point_cloud_transport)"/>
