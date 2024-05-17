@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <machine name="jetson" user="robot" password="nifti" address="jetson"  env-loader="/home/robot/ros_env_setup.sh" />
+  <arg name="robot_name" />
+  <include file="$(find cras_basler_camera)/launch/single_cam.launch" pass_all_args="true">
+    <arg name="camera_name" value="camera_front"/>
+  </include>
+</launch>

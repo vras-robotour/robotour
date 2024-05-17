@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="camera_name" />
+    <arg name="robot_name" />
+    <arg name="node_name" default="$(arg camera_name)" />
+
+    <arg name="mtu_size" default="1500" />
+    <arg name="startup_user_set" default="UserSet1" />
+    <arg name="enable_status_publisher" default="true" />
+    <arg name="enable_current_params_publisher" default="true" />
+    <arg name="camera_config_file" default="$(dirname)/../config/$(arg camera_name).yaml" />
+    <arg name="robot_config_file" default="$(dirname)/../config/$(arg robot_name)/$(arg camera_name).yaml" />
+    <arg name="respawn" default="true" />
+
+    <node name="$(arg node_name)" pkg="pylon_camera" type="pylon_camera_node" output="screen" respawn="$(arg respawn)" respawn_delay="3" machine="jetson">
+        <rosparam command="load" file="$(dirname)/../config/common.yaml" />
+        <rosparam command="load" file="$(arg camera_config_file)" />
+        <rosparam command="load" file="$(arg robot_config_file)" />
+        <param name="gige/mtu_size" value="$(arg mtu_size)"/>
+        <param name="startup_user_set" value="$(arg startup_user_set)"/>
+        <param name="enable_status_publisher" value="$(arg enable_status_publisher)"/>
+        <param name="enable_current_params_publisher" value="$(arg enable_current_params_publisher)"/>
+        <remap from="~image_rect" to="~image_bayer_rect" />
+    </node>
+
+    <group ns="$(arg camera_name)">
+        <node name="nodelet_manager" pkg="nodelet" type="nodelet" args="manager" respawn="$(arg respawn)" machine="jetson"/>
+
+        <node name="debayer" pkg="nodelet" type="nodelet" args="load image_proc/debayer nodelet_manager" respawn="$(arg respawn)" machine="jetson"/>
+
+        <node name="rectify" pkg="nodelet" type="nodelet" args="load image_proc/rectify nodelet_manager" respawn="$(arg respawn)" machine="jetson">
+            <remap from="image_mono" to="image_color"/>
+        </node>
+    </group>
+
+</launch>

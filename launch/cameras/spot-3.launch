@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <machine name="jetson" user="robot" address="jetson" password="nifti" env-loader="/home/robot/ros_env_setup.sh" />
+  
+  <include file="$(dirname)/omnicam_5.launch" pass_all_args="true">
+    <arg name="robot_name" value="spot-3"/>
+  </include>
+  <!--
+  Cannot use find due to different paths (username).
+  
+  <include file="$(find virtual_camera)/launch/ctu_cras/spot_1/pano.launch"/>
+  <include file="$(find msg_db)/launch/pano_downsample.launch"/>
+  
+  <arg name="cras_subt_ws" default="/home/nvidia/workspace/cras_subt"/>
+  <include file="$(arg cras_subt_ws)/src/tradr-ugv-base/virtual_camera/launch/ctu_cras/spot_1/pano.launch"/>
+  <include file="$(arg cras_subt_ws)/src/tradr-ugv-base/msg_db/launch/pano_downsample.launch"/>
+  -->
+  <!--include file="$(find virtual_camera)/launch/ctu_cras/spot_2/pano.launch"/>
+  <include file="$(find msg_db)/launch/pano_downsample.launch"/-->
+</launch>
