@@ -16,8 +16,8 @@
             field: x
             max: 5.0
         </rosparam>
-        <remap from="input" to="TODO"/>
-        <remap from="output" to="TODO"/>
+        <remap from="input" to="max_points"/>
+        <remap from="output" to="max_points_in_range"/>
     </node>
 
     <node name="cloud_voxel_filter_max" pkg="nodelet" type="nodelet"
@@ -28,8 +28,8 @@
             grid: 0.125
             zero_valid: false
         </rosparam>
-        <remap from="input" to="TODO"/>
-        <remap from="output" to="TODO"/>
+        <remap from="input" to="max_points_in_range"/>
+        <remap from="output" to="max+points_125mm"/>
     </node>
 
     <node name="traversability_estimation" pkg="nodelet" type="nodelet"
@@ -57,7 +57,7 @@
             fixed_frame: imu_odom
             timeout: 1.0
         </rosparam>
-        <remap from="input" to="TODO"/>
-        <remap from="output" to="TODO"/>
+        <remap from="input" to="max_points_125mm"/>
+        <remap from="output" to="geometric_traversability"/>
     </node>
 </launch>
