@@ -18,10 +18,10 @@
     <arg name="cloud_in" default="points_filtered_jetson" if="$(eval robot == 'marv-robot')"/>
     <arg name="cloud_in" default="points_filtered" if="$(eval robot == 'spot-3')"/>
 
-    <arg name="camera_info" to="viz/camera_4/camera_info" if="$(eval robot == 'ctu-robot')" />
-    <arg name="camera_info" to="TODO" if="$(eval robot == 'flip')" />
-    <arg name="camera_info" to="camera_front/camera_info" if="$(eval robot == 'marv-robot')" />
-    <arg name="camera_info" to="camera_front/camera_info" if="$(eval robot == 'spot-3')" />
+    <arg name="camera_info" default="viz/camera_4/camera_info" if="$(eval robot == 'ctu-robot')" />
+    <arg name="camera_info" default="TODO" if="$(eval robot == 'flip')" />
+    <arg name="camera_info" default="camera_front/camera_info" if="$(eval robot == 'marv-robot')" />
+    <arg name="camera_info" default="camera_front/camera_info" if="$(eval robot == 'spot-3')" />
 
     <arg name="image_transport" default="compressed" />
     <arg name="point_cloud_transport" default="raw" />

@@ -244,7 +244,7 @@ Visualization Manager:
       Enabled: false
       Invert Rainbow: false
       Max Color: 255; 0; 0
-      Max Intensity: 10
+      Max Intensity: 1
       Min Color: 0; 255; 0
       Min Intensity: 0
       Name: Geometric cloud
@@ -282,7 +282,7 @@ Visualization Manager:
       Queue Size: 2
       Selectable: false
       Size (Pixels): 3
-      Size (m): 0.10000000149011612
+      Size (m): 0.030000000149011612
       Style: Flat Squares
       Topic: /semantic_traversability
       Unreliable: false
