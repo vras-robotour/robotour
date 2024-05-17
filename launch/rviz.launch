@@ -2,7 +2,7 @@
 <launch>
     <!-- RViz -->
     <node name="rviz" pkg="rviz" type="rviz" output="screen"
-          args="-d $(find robotour)/data/robotour.rviz" respawn="true" respawn_delay="1.0">
+          args="-d $(find robotour)/rviz/robotour.rviz" respawn="true" respawn_delay="1.0">
     </node>
 
     <node name="set_rviz_log_level" pkg="rosservice" type="rosservice"
