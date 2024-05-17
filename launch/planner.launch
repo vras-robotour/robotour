@@ -6,6 +6,7 @@
         <rosparam subst_value="true">
             position_field: x
             cost_fields: [cost, cost, intensity]
+            cloud_weights: [1.0, 1.0, 1.0]
             map_frame: local_utm
             robot_frame: base_link
             max_cloud_age: 1.0
