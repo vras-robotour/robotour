@@ -6,14 +6,15 @@
         <rosparam subst_value="true">
             position_field: x
             cost_fields: [cost, cost, intensity]
+            cloud_weights: [1.0, 1.0, 1.0]
             map_frame: local_utm
             robot_frame: base_link
-            max_cloud_age: 1.0
+            max_cloud_age: 5.0
             input_range: 5.0
             cell_size: 0.4
             forget_factor: 0.1
-            max_costs: [1.0, .nan, .nan]
-            default_costs: [.nan, 1.0, 1.0]
+            max_costs: [1.0, 1.0, 1.0]
+            default_costs: [.nan, .nan, .nan]
             neighborhood: 8
             min_path_cost: 1.0
             planning_freq: 1.0
@@ -31,8 +32,8 @@
 
         <!-- Inputs -->
         <remap from="input_cloud_0" to="osm_grid"/>
-        <remap from="input_cloud_1" to="TODO"/>
-        <remap from="input_cloud_2" to="TODO"/>
+        <remap from="input_cloud_1" to="geometric_traversability"/>
+        <remap from="input_cloud_2" to="semantic_traversability"/>
 
         <!-- Outputs -->
         <remap from="map" to="planner_map"/>

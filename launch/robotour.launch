@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv': 0, 'spot-3': 0}[robot])"/>
+    <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
     <arg name="localize" default="true"/>
     <arg name="rviz" default="false"/>
     <arg name="mapdata_path" default="$(find map_data)/data/"/>
@@ -30,8 +30,8 @@
         <arg name="mapdata_file" value="$(arg mapdata_file)"/>
         <arg name="grid_topic" value="osm_grid"/>
     </include>
-    <include file="$(dirname)/geometric_traversability.launch"/>
-    <include file="$(dirname)/semantic_traversability.launch"/>
+    <!--<include file="$(dirname)/geometric_traversability.launch"/>
+    <include file="$(dirname)/semantic_traversability.launch"/>-->
 
     <include file="$(dirname)/planner.launch"/>
     <include file="$(dirname)/follower.launch"/>
