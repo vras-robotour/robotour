@@ -266,7 +266,7 @@ Visualization Manager:
         Min Value: -10
         Value: true
       Axis: Z
-      Channel Name: intensity
+      Channel Name: cost
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
@@ -284,7 +284,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.030000000149011612
       Style: Flat Squares
-      Topic: /semantic_traversability
+      Topic: /semantic_traversability_v2
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
