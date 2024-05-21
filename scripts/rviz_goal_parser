@@ -5,8 +5,8 @@ import numpy as np
 import rospy
 from nav_msgs.srv import GetPlan
 from ros_numpy import numpify
-from tf2_ros import TransformException, StaticTransformBroadcaster
 from geometry_msgs.msg import Point, Vector3, PoseStamped, TransformStamped
+from tf2_ros import Buffer, TransformListener, TransformException, StaticTransformBroadcaster
 
 
 class RVizGoalParser:
@@ -16,6 +16,9 @@ class RVizGoalParser:
         self.tolerance = rospy.get_param('~tolerance', 32)
 
         self.tf_pub = StaticTransformBroadcaster()
+
+        self.tf = Buffer()
+        self.tf_sub = TransformListener(self.tf)
 
         self.get_plan = None
         self.wait_for_get_plan()
