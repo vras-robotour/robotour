@@ -7,7 +7,9 @@
     <arg name="mapdata_file" default="buchlovice.mapdata"/>
     <arg name="test" default="false"/>
     <arg name="test_case" default="buchlovice"/>
+    <arg name="goal_parser_rviz" default="false"/>
 
+    <!-- localization -->
     <group if="$(eval localize)">
         <include file="$(dirname)/local_utm.launch">
             <arg name="test" value="$(arg test)"/>
@@ -17,14 +19,16 @@
         <include file="$(dirname)/utm_odom.launch"/>
     </group>
 
+    <!-- misc -->
     <include file="$(find osm2qr)/launch/qr2geo.launch">
         <arg name="robot" value="$(arg robot)"/>
     </include>
     <include file="$(dirname)/goal_parser.launch">
-        <arg name="test" value="$(arg test)"/>
+        <arg name="test" value="$(arg goal_parser_rviz)"/>
     </include>
     <include file="$(dirname)/status_summary.launch"/>
 
+    <!-- grid data -->
     <include file="$(find map_data)/launch/osm_cloud.launch">
         <arg name="mapdata_path" value="$(arg mapdata_path)"/>
         <arg name="mapdata_file" value="$(arg mapdata_file)"/>
@@ -33,15 +37,23 @@
     <include file="$(dirname)/geometric_traversability.launch">
         <arg name="robot" value="$(arg robot)"/>
     </include>
-    <!--<include file="$(dirname)/semantic_traversability.launch"/>-->
+    <include file="$(dirname)/semantic_traversability.launch"/>
 
+    <!-- naex -->
     <include file="$(dirname)/planner.launch"/>
     <include file="$(dirname)/follower.launch"/>
 
+    <!-- bumper -->
+    <include file="$(find virtual_bumper)/launch/virtual_bumper.launch">
+        <arg name="robot" value="$(arg robot)"/>
+    </include>
+
+    <!-- rviz -->
     <include if="$(eval rviz)" file="$(dirname)/rviz.launch">
         <arg name="robot" value="$(arg robot)"/>
     </include>
 
+    <!-- test -->
     <group if="$(eval test)">
         <include file="$(dirname)/fake_gps.launch">
             <arg name="file" value="$(arg test_case).gps"/>

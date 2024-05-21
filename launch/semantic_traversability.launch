@@ -2,10 +2,12 @@
 <launch>
     <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
 
-    <include file="$(find image_segmentation)/launch/image_segmentation.launch">
-        <arg name="robot" value="$(arg robot)"/>
-    </include>
     <include file="$(dirname)/point_cloud_color.launch">
         <arg name="robot" value="$(arg robot)"/>
     </include>
+
+    <node name="semantic_traversability_node" pkg="image_segmentation" type="traversability.py" output="screen">
+        <remap from="/cloud_in" to="semantic_traversability"/>
+        <remap from="/cloud_out" to="semantic_traversability_v2"/>
+    </node>
 </launch>
