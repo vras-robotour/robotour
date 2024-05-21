@@ -33,7 +33,7 @@
         <!-- Inputs -->
         <remap from="input_cloud_0" to="osm_grid"/>
         <remap from="input_cloud_1" to="geometric_traversability"/>
-        <remap from="input_cloud_2" to="TODO"/>
+        <remap from="input_cloud_2" to="semantic_traversability_v2"/>
 
         <!-- Outputs -->
         <remap from="map" to="planner_map"/>

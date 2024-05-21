@@ -17,7 +17,7 @@
     <node if="$(eval nodelet_manager == 'geometric_traversability_manager')"
           name="$(arg nodelet_manager)" pkg="nodelet" type="nodelet" args="manager"
           respawn="true" respawn_delay="1.0" output="log">
-        <param name="num_worker_threads" value="4"/>
+        <param name="num_worker_threads" value="16"/>
     </node>
 
     <node name="max_filter_projection" pkg="nodelet" type="nodelet"
@@ -40,7 +40,7 @@
           respawn="true" respawn_delay="1.0" output="log">
         <rosparam>
             field: x
-            max: 5.0
+            max: 4.0
         </rosparam>
         <remap from="input" to="max_points"/>
         <remap from="output" to="max_points_in_range"/>

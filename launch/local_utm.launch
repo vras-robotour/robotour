@@ -26,6 +26,6 @@
           type="static_transform_publisher" args="-458378.63 -5550538.10 0 0 0 0 local_utm utm"/>
 
     <node name="tf_static_base_link_local_utm" pkg="tf2_ros"
-          type="static_transform_publisher" args="0 0 0 0 0 0 local_utm map"/>
+          type="static_transform_publisher" args="0 0 0 0 0 0 base_link local_utm"/>
     
 </launch>
