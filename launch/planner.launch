@@ -5,7 +5,7 @@
         
         <rosparam subst_value="true">
             position_field: x
-            cost_fields: [cost, cost, intensity]
+            cost_fields: [cost, cost, cost]
             cloud_weights: [1.0, 1.0, 1.0]
             map_frame: local_utm
             robot_frame: base_link
@@ -13,7 +13,7 @@
             input_range: 5.0
             cell_size: 0.4
             forget_factor: 0.1
-            max_costs: [1.0, 1.0, 1.0]
+            max_costs: [.nan, .nan, .nan]
             default_costs: [.nan, .nan, .nan]
             neighborhood: 8
             min_path_cost: 1.0
@@ -33,7 +33,7 @@
         <!-- Inputs -->
         <remap from="input_cloud_0" to="osm_grid"/>
         <remap from="input_cloud_1" to="geometric_traversability"/>
-        <remap from="input_cloud_2" to="semantic_traversability_v2"/>
+        <remap from="input_cloud_2" to="TODO"/>
 
         <!-- Outputs -->
         <remap from="map" to="planner_map"/>

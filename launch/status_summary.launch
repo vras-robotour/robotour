@@ -4,7 +4,7 @@
           respawn="true" respawn_delay="1.0" output="screen">
 
         <!-- Inputs -->
-        <remap from="navsatfix" to="navsatfix"/>
+    <remap from="navsatfix" to="gnss/septentrio/fix"/>
         <remap from="atteuler" to="atteuler"/>
 
         <!-- Outputs -->

@@ -8,10 +8,10 @@
 <launch>
     <arg name="robot" default="spot-3"/><group if="$(eval {'ctu-robot': 0, 'flip': 0, 'marv-robot': 0, 'spot-3': 0}[robot])"/>
 
-    <arg name="camera_in" default="viz/camera_4/image_segmentation" if="$(eval robot == 'ctu-robot')"/>
+    <arg name="camera_in" default="viz/camera_4/image_cost" if="$(eval robot == 'ctu-robot')"/>
     <arg name="camera_in" default="TODO" if="$(eval robot == 'flip')"/>
-    <arg name="camera_in" default="camera_front/image_segmentation" if="$(eval robot == 'marv-robot')"/>
-    <arg name="camera_in" default="camera_front/image_segmentation" if="$(eval robot == 'spot-3')"/>
+    <arg name="camera_in" default="camera_front/image_cost" if="$(eval robot == 'marv-robot')"/>
+    <arg name="camera_in" default="camera_front/image_cost" if="$(eval robot == 'spot-3')"/>
 
     <arg name="cloud_in" default="points_filtered" if="$(eval robot == 'ctu-robot')"/>
     <arg name="cloud_in" default="TODO" if="$(eval robot == 'flip')"/>
