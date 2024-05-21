@@ -4,7 +4,7 @@ import numpy as np
 
 import rospy
 from nav_msgs.srv import GetPlan
-from rospy.numpy_msg import numpify
+from ros_numpy import numpify
 from tf2_ros import TransformException, StaticTransformBroadcaster
 from geometry_msgs.msg import Point, Vector3, PoseStamped, TransformStamped
 
