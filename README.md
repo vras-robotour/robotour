@@ -52,7 +52,7 @@ Here we provide a list of all the launch files in the package. They are listed i
     - Depending on the argument `test`, it will either start the node in test mode or normal mode.
     - Normal mode is used during the competition it takes goal from detected QR codes. Test mode takes the goal from position clicked in RViz.
     - Usage: `roslaunch robotour goal_parser.launch test:=<true/false>`
-- loca_utm.launch
+- local_utm.launch
     - Launches the local_utm node.
     - It has two arguments `test` and `case`.
     - Argument `test` is used to switch between test and normal mode. Test mode is used for testing pusposes and publishes a static transformation.
