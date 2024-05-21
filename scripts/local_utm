@@ -70,7 +70,7 @@ class LocalUtm:
         except utm.OutOfRangeError as e:
             rospy.logerr_throttle(1, f'UTM conversion error: {e}')
             return
-        
+
         with self.lock:
             if self.wait_msgs <= 0:
                 return
@@ -83,20 +83,20 @@ class LocalUtm:
             pos = np.array([-easting, -northing, -gps_pos[2]])
 
             # Publish static transform
-            utm_to_local = TransformStamped()
-            utm_to_local.header.stamp = stamp
-            utm_to_local.header.frame_id = self.local_frame
-            utm_to_local.child_frame_id = self.utm_frame
-            utm_to_local.transform.translation = Vector3(*pos)
+            local_to_utm = TransformStamped()
+            local_to_utm.header.stamp = stamp
+            local_to_utm.header.frame_id = self.local_frame
+            local_to_utm.child_frame_id = self.utm_frame
+            local_to_utm.transform.translation = Vector3(*pos)
 
             # Keep east-north orientation
-            utm_to_local.transform.rotation.w = 1
+            local_to_utm.transform.rotation.w = 1
 
-            self.tf_static_pub.sendTransform([utm_to_local])
-            rospy.loginfo(f'Published static transform from {self.utm_frame} to {self.local_frame}.')
+            self.tf_static_pub.sendTransform([local_to_utm])
+            rospy.loginfo(f'Published static transform from {self.local_frame} to {self.utm_frame}.')
 
             self.unsubscribe()
-            
+
     def navsatfix_cb(self, msg):
         '''
         Callback for NavSatFix messages.
