@@ -46,11 +46,11 @@ class RVizGoalParser:
         '''
         self.wait_for_get_plan()
 
-        rviz_goal = numpify(msg.pose.position).ravel()
+        rviz_goal = numpify(msg.pose.position).reshape(3,1)
 
         # Transform goal to target frame
         try:
-            target_goal = self.tf.lookup_transform(self.target_frame, self.utm_frame, self.tf_timeout)
+            target_goal = self.tf.lookup_transform(self.local_frame, msg.header.frame_id, rospy.Time())
         except TransformException as e:
             rospy.logerr(f'Transform failed: {e}')
             return
