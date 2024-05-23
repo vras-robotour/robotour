@@ -25,7 +25,10 @@
     <node if="$(eval test and case == 'stromovka')" name="tf_static_local_utm_utm" pkg="tf2_ros"
           type="static_transform_publisher" args="-458378.63 -5550538.10 0 0 0 0 local_utm utm"/>
 
-    <node name="tf_static_base_link_local_utm" pkg="tf2_ros"
+    <node name="tf_static_local_utm_map" pkg="tf2_ros"
           type="static_transform_publisher" args="0 0 0 0 0 0 local_utm map"/>
+
+	<node if="$(eval test)" name="tf_static_map_base_link" pkg="tf2_ros"
+		  type="static_transform_publisher" args="0 0 0 0 0 0 map base_link"/>
     
 </launch>
