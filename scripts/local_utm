@@ -80,20 +80,20 @@ class LocalUtm:
                 return
             rospy.loginfo('All measurements received.')
 
-            pos = np.array([-easting, -northing, -gps_pos[2]])
+            pos = np.array([easting, northing, gps_pos[2]])
 
             # Publish static transform
-            local_to_utm = TransformStamped()
-            local_to_utm.header.stamp = stamp
-            local_to_utm.header.frame_id = self.local_frame
-            local_to_utm.child_frame_id = self.utm_frame
-            local_to_utm.transform.translation = Vector3(*pos)
+            utm_to_local = TransformStamped()
+            utm_to_local.header.stamp = stamp
+            utm_to_local.header.frame_id = self.utm_frame
+            utm_to_local.child_frame_id = self.local_frame
+            utm_to_local.transform.translation = Vector3(*pos)
 
             # Keep east-north orientation
-            local_to_utm.transform.rotation.w = 1
+            utm_to_local.transform.rotation.w = 1
 
-            self.tf_static_pub.sendTransform([local_to_utm])
-            rospy.loginfo(f'Published static transform from {self.local_frame} to {self.utm_frame}.')
+            self.tf_static_pub.sendTransform([utm_to_local])
+            rospy.loginfo(f'Published static transform from {self.utm_frame} to {self.local_frame}.')
 
             self.unsubscribe()
 
