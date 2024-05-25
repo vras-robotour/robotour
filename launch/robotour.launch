@@ -51,9 +51,7 @@
     </include>
 
     <!-- rviz -->
-    <include if="$(eval rviz)" file="$(dirname)/rviz.launch">
-        <arg name="robot" value="$(arg robot)"/>
-    </include>
+    <include if="$(eval rviz)" file="$(dirname)/rviz.launch"/>
 
     <!-- test -->
     <group if="$(eval test)">
